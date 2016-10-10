@@ -1,0 +1,400 @@
+00001 option base 1
+00002 declare all integer*2
+00005 dim R(20,5),X(20),AR(5)
+00009 margin 0
+00010 print chr$(29);chr$(15);chr$(2);"WUMPUS (c)1987 Walter Stoneburner"
+00020 print "v1.3   (c)1987 Wizard Workshop and Company"
+00023 def FNR(I)=int(rnd*I)+1
+00025 goto 08000
+00030 print
+00035 rem *** Write to a file who played and when ***
+00040 data 2,3,9, 1,3,20, 1,2,7, 19,5,6, 4,6,15, 4,5,8, 3,8,11, 7,6,13
+00041 linput bytes 1, prompt "Need Instructions (Y/N)? ":R$
+00042 let R$=uprc$(ltrm$(rtrm$(R$)))
+00043 print
+00044 if R$="Y" then gosub 05000
+00050 data 1,10,16, 9,11,16, 7,10,12, 11,13,17, 8,12,14,
+00051 data 13,15,18, 5,14,18, 9,10,19, 12,19,20, 20,14,15, 16,17,4, 2,17,18
+00061 if rnd>.7 then
+00062   print "Waking the Wumpus!"
+00063   if rnd>.5 then print "Uh-oh!  He's in a bad mood."
+00064 end if
+00065 data 2,5,8, 1,3,10, 2,4,12, 3,5,14, 1,4,6, 5,7,15, 6,8,17, 1,7,9, 8,10,18
+00066 data 2,9,11, 10,12,19, 3,11,13, 12,14,20, 4,13,15, 6,14,16, 15,17,20
+00067 data 7,16,18, 9,17,19, 11,18,20, 13,16,19
+00070 restore
+00072 if rnd>.5 then gosub 07800
+00080 for I=1 to 20
+00090   read R(I,1),R(I,2),R(I,3)
+00100   let X(I)=I
+00110 next I
+00150 randomize
+00160 for I=1 to 20
+00170   let R(I,4),R(I,5)=0
+00180   let J=FNR(20)
+00190   let T=X(I)
+00200   let X(I)=X(J)
+00210   let X(J)=T
+00220 next I
+00300 for I=1 to 2+FNR(2)
+00310   let R(FNR(20),4)=1
+00320 next I
+00330 for I=1 to 2+int(rnd)
+00340   let R(FNR(20),4)=2
+00350 next I
+00360 let W=FNR(20)
+00370 let R(W,4)=R(W,4)+4
+00380 let P=FNR(20)
+00390 if R(P,4)<>0 then 00380
+00395 let ARROW=2
+00400 let R(P,5)=R(P,5)+1
+00410 let A=R(P,1)
+00420 let B=R(P,2)
+00430 let C=R(P,3)
+00440 print chr$(10);chr$(29);chr$(2);chr$(15);"You are in room";X(P)
+00450 if R(P,4)<>1 and R(P,4)<>5 then 00470
+00460 print "You fell down a pit."
+00465 goto 02100
+00470 if P<>W then 00490
+00480 print "You walked into the Wumpus.  He eats you!"
+00485 goto 02100
+00490 if R(P,4)=0 then 00600
+00500 print "Oh no!  Super-Bats!  They carry you off."
+00510 let P=FNR(20)
+00520 goto 00400
+00600 if R(P,5)>1 and rnd>.87 then gosub 02700
+00605 if R(A,4)<4 and R(B,4)<4 and R(C,4)<4 then 00620
+00610 print "I smell a Wumpus."
+00620 if R(A,4)<>1 and R(A,4)<>5 and R(B,4)<>1 and R(B,4)<>5 and R(C,4)<>1 and R(C,4)<>5 then 00640
+00630 print "I feel a draft."
+00640 if R(A,4)<>2 and R(A,4)<>6 and R(B,4)<>2 and R(B,4)<>6 and R(C,4)<>2 and R(C,4)<>6 then 00660
+00650 print "I hear bats."
+00660 print "Tunnels lead to:";X(A);X(B);X(C)
+00700 print "(M)ove or (S)hoot: ";
+00705 linput eof 09000, noecho, prompt "", bytes 1:A$
+00710 let A$=uprc$(A$)
+00720 if A$="M" then 00800
+00721 if A$="??" then 03000                       ! edit here to one ? for map
+00730 if A$="S" then 01000
+00740 if A$="Q" then 00760
+00750 goto 00705
+00760 print "QUIT."
+00770 goto 09999
+00780 print "There is no such room!"
+00782 if rnd>.8 then gosub 02800
+00790 goto 00440
+00800 print "MOVE"
+00810 linput eof 09000, prompt "To which room: ":R$
+00820 enable handler RESM, resume at 00780
+00830 let R$=uprc$(ltrm$(rtrm$(R$)))
+00840 let R$=R$(1:2)
+00841 if R$(1:1)="Q" then
+00842   print "QUIT"
+00845   goto 09999
+00846 end if
+00850 let M=val(R$)
+00851 disable handler
+00860 if M<1 or M>20 or M<>int(abs(M)) then 00780
+00870 if M=X(A) then
+00872   let P=A
+00873   goto 00400
+00875 end if
+00880 if M=X(B) then
+00882   let P=B
+00884   goto 00400
+00885 end if
+00890 if M=X(C) then
+00892   let P=C
+00893   goto 00400
+00895 end if
+00900 if rnd>.5 then print "There is no such room!" else print "You can't get there from here!"
+00901 if rnd>.65 then gosub 02800
+00910 goto 00440
+00920 handler RESM
+00925   resume
+00930 end handler
+01000 print "SHOOT"
+01010 print "Please enter up to five rooms to shoot to.  If you enter more than one"
+01020 print "room, they must be adjoining.  Enter your last room with a zero if you are"
+01030 print "shooting into less than five rooms.  GOOD LUCK!"
+01090 enable handler RESM, resume at 00780
+01100 for I=1 to 5
+01101   let AR(I)=0
+01110   print "Arrow path #";str$(I);": ";
+01120   linput eof 09000, prompt "":R$
+01122   let R$=uprc$(ltrm$(ltrm$(R$)))
+01125   if R$(1:1)="Q" then
+01126     print "QUIT"
+01127     goto 09000
+01128   end if
+01135   let R$=R$(1:2)
+01140   let AR(I)=val(R$)
+01141   disable handler
+01150   if AR(I)<0 or AR(I)>20 or AR(I)<>int(abs(AR(I))) then 00780
+01160   if AR(I)=0 then 01190
+01161   for J=1 to I-1
+01162     if AR(J)=AR(I) then
+01163       print "The magic arrow isn't that crooked!"
+01164       goto 01101
+01165     end if
+01166   next J
+01170 next I
+01190 if AR(1)=0 and I=1 then
+01192   print "I see you changed your mind."
+01195   goto 07000
+01197 end if
+01200 print "Shooting Arrow!"
+01201 let I=0
+01205 let ARROW=ARROW-1
+01210 let K=P
+01220 let L=R(K,1)
+01230 let M=R(K,2)
+01240 let N=R(K,3)
+01250 let I=I+1
+01260 if I=6 then
+01270   print "Your arrow lost it's speed and fell.";chr$(10);"You missed the Wumpus."
+01271   if rnd>.8 then gosub 02600
+01275   goto 02000
+01280 end if
+01290 if AR(I)=0 then
+01291   print "Your arrow missed the Wumpus."
+01292   if rnd>.7 then gosub 02600
+01293   goto 02000
+01295 end if
+01300 if AR(I)=X(L) then
+01310   let K=L
+01311   goto 01400
+01312 end if
+01320 if AR(I)=X(M) then
+01330   let K=M
+01331   goto 01400
+01332 end if
+01340 if AR(I)=X(N) then
+01350   let K=N
+01351   goto 01400
+01352 end if
+01360 print "Your arrow bounced off the wall trying to get to room";AR(I);"."
+01361 if rnd>.1 then
+01362   print "The arrow ricochets back at you!"
+01363   let K=P
+01364   goto 01405
+01365 end if
+01380 print "You missed the Wumpus."
+01390 goto 02000
+01400 print "Room";AR(I)
+01405 if K=P then
+01407   if rnd>.5 then print "Ack!  ";
+01408   if rnd>.9 then print "{Twang!}  ";
+01410   print "You shot yourself with the arrow!"
+01411   if rnd>.9 then print "It was a good shot, though!"
+01412   if rnd>.9 then print "Oooooooohhhhh!  I'm dyin'"
+01413   if rnd>.9 then print "Ouch!  I get the point."
+01414   let ARROW=-1
+01420   goto 02000
+01430 end if
+01440 if int(W)=int(K) then
+01450   print "You shot the Wumpus!"
+01455   if rnd>.6 then gosub 02500
+01460   let R(W,4)=R(W,4)-4
+01461   let W=FNR(20)
+01462   let R(W,4)=R(W,4)+4
+01463   goto 02100
+01470 end if
+01500 goto 01220
+02000 let A=R(W,1)
+02010 let B=R(W,2)
+02020 let C=R(W,3)
+02030 on FNR(4) goto 02040, 02050, 02060, 02070
+02040 let R(W,4)=R(W,4)-4
+02042 let W=A
+02043 if W=P then 07100
+02047 let R(W,4)=R(W,4)+4
+02048 goto 02070
+02050 let R(W,4)=R(W,4)-4
+02051 let W=B
+02052 if W=P then 07100
+02057 let R(W,4)=R(W,4)+4
+02058 goto 02070
+02060 let R(W,4)=R(W,4)-4
+02061 let W=C
+02062 if W=P then 07100
+02067 let R(W,4)=R(W,4)+4
+02070 if ARROW>0 then 07000
+02072 if ARROW=0 then print "Sorry!  That was your last arrow!"
+02100 print "Play Again (Y/N): ";
+02110 linput eof 09000, prompt "", noecho, bytes 1:R$
+02111 let R$=uprc$(ltrm$(ltrm$(R$)))
+02112 let R$=R$(1:1)
+02115 if R$="N" then
+02120   print "NO."
+02122   goto 09999
+02125 end if
+02126 if R$="Q" then 02230
+02130 if R$<>"Y" then 02110
+02140 print "YES"
+02200 print "Explore the same cave (Y/N): ";
+02210 linput eof 09000, prompt "", noecho, bytes 1:R$
+02212 let R$=uprc$(ltrm$(ltrm$(R$)))
+02214 let R$=R$(1:1)
+02220 if R$="Y" then
+02222   print "YES"
+02223   if rnd>.6 then print "OK, but this time be careful!!!"
+02225   goto 00380
+02227 end if
+02230 if R$="Q" then
+02232   print "QUIT."
+02233   goto 09999
+02235 end if
+02240 if R$<>"N" then 02210
+02250 print "NO"
+02252 if rnd>.8 then print "Ugh - this one stinks of Wumpus."
+02260 if rnd>.5 then 00070 else 00150
+02500 on FNR(10) goto 02510, 02520, 02530, 02540, 02550, 02560, 02570, 02580, 02590, 02595
+02510 print "** GOOD JOB! **"
+02511 return
+02520 print "You know how hard it is to find a decent Wumpus these days?"
+02521 return
+02530 print "Why not pick on someone your own size?"
+02531 return
+02540 print "The Wumpus will get you next time..."
+02541 return
+02550 print "I hope your grandmother falls in a pit."
+02551 return
+02560 print "My hero!  You're so brave and strong."
+02561 return
+02570 print "I'd like to see you try that again."
+02571 return
+02580 print "Obviously, luck is on your side."
+02581 return
+02590 print ">> Congratulations! <<"
+02591 return
+02595 print "You did it!"
+02596 return
+02600 on FNR(10) goto 02610, 02620, 02630, 02640, 02650, 02660, 02670, 02680, 02690, 02695
+02610 print "You lost my favorite arrow!"
+02612 return
+02620 print "Well.. you've disarmed yourself pretty well."
+02621 return
+02630 print "Think before you shoot!"
+02631 return
+02640 print "I think you woke the Wumpus!"
+02641 return
+02650 print "Maybe you'll have better luck next time."
+02651 return
+02660 print "Mom always said you shouldn't shoot Wumpus in the house."
+02661 return
+02670 print "Ha ha!  The Wumpus always wins..."
+02671 return
+02680 print "Try doing something less dangerous like putting an apple on your head and"
+02681 print "playing William Tell."
+02682 return
+02690 print "Great shooting Tex.  Didn't hit a thing, but Great Shootin'"
+02691 return
+02695 print "Well...  At least it made a neat swoosh noise."
+02696 return
+02700 on FNR(10) goto 02710, 02720, 02730, 02740, 02750, 02760, 02770, 02780, 02790, 02795
+02710 print "Dark isn't one of my favorite colors."
+02711 return
+02720 print "I'm scared - it's official."
+02721 return
+02730 print "I smell a draft.  No!  That isn't right.  Sorry!"
+02731 return
+02740 print "Are we having fun yet?"
+02741 return
+02750 print "My personal opinion says we're hopelessly lost."
+02751 return
+02760 print "It's too quiet..."
+02761 return
+02770 print "You step in a pile of bat dung."
+02771 return
+02780 print "At this rate, we'll make that writing implement useless."
+02781 return
+02790 print "Haven't we been here before?"
+02791 return
+02795 print "I don't know about you... but I want my mommy!"
+02796 return
+02800 on FNR(10) goto 02810, 02820, 02830, 02840, 02850, 02860, 02870, 02880, 02890, 02895
+02810 print "Good move, He-Man!"
+02811 return
+02820 print "Nice try - maybe if you hit your head a little harder?"
+02821 return
+02830 print "Walls are thicker than blood."
+02831 return
+02840 print "You can't walk through walls..."
+02841 return
+02850 print "Where did you think you were going anyhow?"
+02851 return
+02860 print "Nice try, but no banana...."
+02861 return
+02870 print "You're not a ghost, yet."
+02871 return
+02880 print "Cute trick, now can you get yourself eaten?"
+02881 return
+02890 print "Don't you look both ways before bumping into things?"
+02891 return
+02895 print "Don't worry - I'm not judging your intelligence."
+02896 return
+03000 print "Current room: ";X(P);P;"    Wumpus: ";X(W);W
+03001 for I=1 to 20
+03010   print using "##) ## ## ##   ##   ###":I,R(I,1),R(I,2),R(I,3),R(I,4),R(I,5)
+03020 next I
+03030 linput noecho, bytes 1, prompt "":R$
+03040 goto 00440
+05000 print "  Hunt The Wumpus is a game where you, the mighty adventurer, are trying to"
+05010 print "shoot a Wumpus hiding in a cave.  The cave has twenty rooms with each room"
+05020 print "having three exits leading to another room.  Inside the cave there are"
+05030 print "bottomless pits.  When you are one room away, you'll feel the draft quite"
+05040 print "well.  There are also Super-Bats which don't like you invading their territory."
+05050 print "They can't hurt you, but they can pick you up and drop you in another room."
+05060 print "Sometimes they'll drop you in a pit or with the Wumpus!"
+05070 print "  Never-Ever enter the room with the Wumpus.  If you do, he'll wake up and"
+05080 print "eat you.  A Wumpus is very large, so bats can't carry him off.  He's also got"
+05090 print "sucker feet, so he won't fall in pits.  And activity in a day for a Wumpus"
+05100 print "consists mostly of sleep; unless he's hit by one of your three arrows."
+05110 print "  Once you discover where he's sleeping, you can shoot your magic crooked"
+05120 print "arrow at him.  If you miss, you lose.  If you hit him, you win.  Your arrow"
+05130 print "can go around corners and you can shoot it up to five rooms away from the"
+05140 print "Wumpus.  Don't shoot yourself, and don't hit the wall by trying to go to a room"
+05150 print "that isn't connected.  If you shoot the arrow and miss, the Wumpus will wake"
+05160 print "up, and optionally move one room.  If he walks in with you, you die!"
+05170 return
+07000 print "You only have";ARROW;" arrow";
+07010 if ARROW<>1 then print "s";
+07020 print " left to shoot."
+07030 goto 00410
+07100 print "The Wumpus woke up and moved into room";X(P);" with you!"
+07110 print "He eats you!!!  Arrgggghh!"
+07120 let W=FNR(20)
+07130 let R(W,4)=R(W,4)+4
+07140 goto 02100
+07800 for I=1 to 20
+07801   read A,B,C
+07802 next I
+07803 return
+07900 enable handler RESM, resume at 07920
+07905 let WUMPLOG$=":SDD:UDD:PER.STONEY:WUMPUS.LOG"
+07910 create WUMPLOG$
+07911 acl WUMPLOG$,"PER.STONEY,OWARE +,RW"
+07920 close
+07925 enable handler RESM, resume at 07955        ! incase log file not created
+07930 open #1:WUMPLOG$ display, sequential, output, end, variable
+07932 margin #1:0
+07935 who into A$
+07940 let A$=A$(9:30)
+07942 let A$=rpad$(A$(1:pos(A$,":")-1),17)&date$&" "&time$&"  P"&str$(J)&" U"&str$(U)
+07950 output #1:A$
+07955 close #1
+07956 goto 00030
+08000 let J=0
+08001 let U=0
+08005 enable handler RESM, resume at 08070
+08010 for I=1 to 255
+08020   who I into A$
+08023   if pos(A$,":CON") then let U=U+1
+08030   let J=J+1
+08070 next I
+08080 if J<75 then 07900                          ! number of process for busy
+08090 print "The system is busy right now... please try again later."
+08095 goto 09999
+09000 print "-ABORT!-"
+09999 end
